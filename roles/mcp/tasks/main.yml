@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Include tasks to validate variables
+  ansible.builtin.include_tasks:
+    file: validate-vars.yml
+  tags: always
+
+- name: Install and configure Itential MCP server
+  notify: restart itential-mcp
+  block:
+    - name: Install Itential MCP server
+      tags: install_mcp
+      block:
+        - name: Install Python dependencies
+          ansible.builtin.include_tasks:
+            file: install-python.yml
+
+        - name: Install Itential MCP package (online)
+          ansible.builtin.include_tasks:
+            file: install-mcp.yml
+          when: not offline_install_enabled | bool
+
+        - name: Install Itential MCP package (offline)
+          ansible.builtin.include_tasks:
+            file: install-mcp-offline.yml
+          when: offline_install_enabled | bool
+
+    - name: Configure Itential MCP server
+      tags: configure_mcp
+      ansible.builtin.include_tasks:
+        file: configure-mcp.yml
+
+- name: Flush handlers to start itential-mcp before asserting
+  ansible.builtin.meta: flush_handlers
+  tags: always
+
+- name: Assert that itential-mcp service is running
+  ansible.builtin.systemd:
+    name: itential-mcp
+  register: mcp_service_status
+  failed_when: mcp_service_status.status.ActiveState != "active"
+  tags: always

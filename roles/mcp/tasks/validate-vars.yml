@@ -1,0 +1,33 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Validate Itential MCP variables
+  tags: always
+  block:
+    - name: Validate transport value
+      ansible.builtin.assert:
+        that: mcp_transport in ['sse', 'http']
+        fail_msg: "mcp_transport must be one of: sse, http (stdio is not supported for systemd service deployments)"
+
+    - name: Validate platform host is defined
+      ansible.builtin.assert:
+        that:
+          - mcp_platform_host is defined
+          - mcp_platform_host | length > 0
+        fail_msg: mcp_platform_host must be defined and non-empty
+
+    - name: Validate port is in valid range
+      ansible.builtin.assert:
+        that:
+          - mcp_port | int >= 1
+          - mcp_port | int <= 65535
+        fail_msg: "mcp_port must be between 1 and 65535"
+      when: mcp_transport in ['sse', 'http']
+
+    - name: Validate version is specified for offline install
+      ansible.builtin.assert:
+        that: mcp_version != 'latest'
+        fail_msg: >
+          mcp_version must be a specific version for offline installs (e.g., '0.12.1').
+          'latest' is not supported because the offline package bundle must be pre-staged.
+      when: offline_install_enabled | bool

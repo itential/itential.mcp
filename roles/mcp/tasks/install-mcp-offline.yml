@@ -1,0 +1,31 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Create offline packages directory on target node
+  ansible.builtin.file:
+    state: directory
+    path: "{{ offline_target_node_root }}/itential-mcp-packages"
+    mode: "0755"
+
+- name: Copy offline packages to target node
+  ansible.builtin.copy:
+    src: "{{ offline_control_node_root }}/itential-mcp-packages/"
+    dest: "{{ offline_target_node_root }}/itential-mcp-packages/"
+
+- name: Create installation directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ mcp_install_dir }}"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install itential-mcp from offline packages
+  ansible.builtin.pip:
+    name:
+      - "itential-mcp=={{ mcp_version }}"
+      - "fastmcp>=3.0,<3.3"
+    virtualenv: "{{ mcp_venv_dir }}"
+    virtualenv_command: "{{ mcp_python_executable }} -m venv"
+    extra_args: "--no-index --find-links {{ offline_target_node_root }}/itential-mcp-packages"
+    state: present

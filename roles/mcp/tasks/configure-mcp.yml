@@ -1,0 +1,67 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Create itential-mcp system group
+  ansible.builtin.group:
+    name: "{{ mcp_group }}"
+    system: true
+    state: present
+
+- name: Create itential-mcp system user
+  ansible.builtin.user:
+    name: "{{ mcp_owner }}"
+    group: "{{ mcp_group }}"
+    system: true
+    shell: /sbin/nologin
+    home: "{{ mcp_install_dir }}"
+    create_home: false
+    state: present
+
+- name: Create configuration directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ mcp_conf_dir }}"
+    owner: "{{ mcp_owner }}"
+    group: "{{ mcp_group }}"
+    mode: "0750"
+
+- name: Create log directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ mcp_log_dir }}"
+    owner: "{{ mcp_owner }}"
+    group: "{{ mcp_group }}"
+    mode: "0755"
+
+- name: Configure itential-mcp server
+  ansible.builtin.template:
+    src: mcp.conf.j2
+    dest: "{{ mcp_conf_file }}"
+    owner: "{{ mcp_owner }}"
+    group: "{{ mcp_group }}"
+    mode: "0640"
+
+# Credentials are written to a separate file with restrictive permissions so
+# they are never stored in the main config file alongside non-sensitive settings.
+- name: Configure itential-mcp environment file
+  ansible.builtin.template:
+    src: itential-mcp.env.j2
+    dest: "{{ mcp_env_file }}"
+    owner: "{{ mcp_owner }}"
+    group: "{{ mcp_group }}"
+    mode: "0600"
+  no_log: true
+
+- name: Install itential-mcp systemd unit
+  ansible.builtin.template:
+    src: itential-mcp.service.j2
+    dest: /etc/systemd/system/itential-mcp.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enable and start itential-mcp service
+  ansible.builtin.systemd:
+    name: itential-mcp
+    state: started
+    enabled: true

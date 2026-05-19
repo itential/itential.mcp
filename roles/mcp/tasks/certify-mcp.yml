@@ -1,0 +1,134 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Post-installation validation. Checks service health, config, and connectivity,
+# then produces a markdown report fetched back to the control node.
+
+- name: Create certify report directory on target node
+  ansible.builtin.file:
+    state: directory
+    path: "{{ mcp_certify_report_dir_remote }}"
+    mode: "0755"
+
+# When the server binds to 0.0.0.0, use loopback for local health checks.
+- name: Set health check host
+  ansible.builtin.set_fact:
+    mcp_check_host: "{{ '127.0.0.1' if mcp_host == '0.0.0.0' else mcp_host }}"
+
+- name: Gather itential-mcp service status
+  ansible.builtin.systemd:
+    name: itential-mcp
+  register: mcp_certify_service
+
+- name: Check itential-mcp process is running
+  ansible.builtin.command:
+    cmd: pgrep -fa itential-mcp
+  register: mcp_certify_process
+  changed_when: false
+  failed_when: false
+
+- name: Check itential-mcp is listening on configured port
+  ansible.builtin.shell:
+    cmd: "ss -tlnp | grep ':{{ mcp_port }}'"
+  register: mcp_certify_port
+  changed_when: false
+  failed_when: false
+  when: mcp_transport in ['sse', 'http']
+
+- name: Stat config file
+  ansible.builtin.stat:
+    path: "{{ mcp_conf_file }}"
+  register: mcp_certify_conf_stat
+
+- name: Stat environment file
+  ansible.builtin.stat:
+    path: "{{ mcp_env_file }}"
+  register: mcp_certify_env_stat
+
+- name: Stat systemd unit file
+  ansible.builtin.stat:
+    path: /etc/systemd/system/itential-mcp.service
+  register: mcp_certify_unit_stat
+
+- name: Check itential-mcp binary exists in venv
+  ansible.builtin.stat:
+    path: "{{ mcp_venv_dir }}/bin/itential-mcp"
+  register: mcp_certify_binary_stat
+
+- name: Get installed itential-mcp version
+  ansible.builtin.command:
+    cmd: "{{ mcp_venv_dir }}/bin/itential-mcp version"
+  register: mcp_certify_version
+  changed_when: false
+  failed_when: false
+
+- name: Get available tool list
+  ansible.builtin.command:
+    cmd: "{{ mcp_venv_dir }}/bin/itential-mcp --config {{ mcp_conf_file }} tools"
+  register: mcp_certify_tools
+  changed_when: false
+  failed_when: false
+  environment:
+    ITENTIAL_MCP_CONFIG: "{{ mcp_conf_file }}"
+
+- name: Check MCP server health endpoint
+  ansible.builtin.uri:
+    url: "http://{{ mcp_check_host }}:{{ mcp_port }}/status/healthz"
+    method: GET
+    status_code: 200
+    timeout: 10
+  register: mcp_certify_health
+  failed_when: false
+  when: mcp_transport in ['sse', 'http']
+
+# readyz tests live connectivity to the Itential Platform — a pass here means
+# the MCP server can authenticate and reach the platform API.
+- name: Check MCP server readiness endpoint
+  ansible.builtin.uri:
+    url: "http://{{ mcp_check_host }}:{{ mcp_port }}/status/readyz"
+    method: GET
+    status_code: 200
+    timeout: 15
+  register: mcp_certify_readyz
+  failed_when: false
+  when: mcp_transport in ['sse', 'http']
+
+- name: Generate certify report
+  ansible.builtin.template:
+    src: certify-report.j2
+    dest: "{{ mcp_certify_report_dir_remote }}/mcp-certify-{{ inventory_hostname }}.md"
+    mode: "0644"
+
+- name: Create local certify report directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ mcp_certify_report_dir_local }}"
+    mode: "0755"
+  delegate_to: localhost
+  become: false
+  run_once: true
+
+- name: Fetch certify report to control node
+  ansible.builtin.fetch:
+    src: "{{ mcp_certify_report_dir_remote }}/mcp-certify-{{ inventory_hostname }}.md"
+    dest: "{{ mcp_certify_report_dir_local }}/"
+    flat: true
+
+- name: Display certify summary
+  ansible.builtin.debug:
+    msg:
+      - "============================================================"
+      - " Itential MCP Server Certification - {{ inventory_hostname }}"
+      - "============================================================"
+      - "Service active:    {{ mcp_certify_service.status.ActiveState }}"
+      - "Service enabled:   {{ mcp_certify_service.status.UnitFileState }}"
+      - "Process running:   {{ 'Yes' if mcp_certify_process.rc == 0 else 'No' }}"
+      - "Binary exists:     {{ 'Yes' if mcp_certify_binary_stat.stat.exists else 'No' }}"
+      - "Version:           {{ mcp_certify_version.stdout | default('unknown') | trim }}"
+      - "Config file:       {{ 'Present (' + mcp_certify_conf_stat.stat.mode + ')' if mcp_certify_conf_stat.stat.exists else 'MISSING' }}"
+      - "Env file:          {{ 'Present (' + mcp_certify_env_stat.stat.mode + ')' if mcp_certify_env_stat.stat.exists else 'MISSING' }}"
+      - "Health endpoint:   {{ mcp_certify_health.status | default('N/A') if mcp_transport in ['sse', 'http'] else 'N/A (stdio transport)' }}"
+      - "Readiness:         {{ mcp_certify_readyz.status | default('N/A') if mcp_transport in ['sse', 'http'] else 'N/A (stdio transport)' }}"
+      - "Tools available:   {{ mcp_certify_tools.stdout_lines | length if mcp_certify_tools.rc == 0 else 'unknown' }}"
+      - "Report:            {{ mcp_certify_report_dir_local }}/mcp-certify-{{ inventory_hostname }}.md"
+      - "============================================================"

@@ -1,0 +1,31 @@
+# Ansible
+*.retry
+inventories/
+
+# Offline package bundle — large wheel files, generated per-platform
+files/itential-mcp-packages/
+
+# Certify reports — generated at runtime
+playbooks/certify-reports/
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.cert
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.egg-info/
+.venv/
+
+# macOS
+.DS_Store
+
+# Editor
+.swp*
+*.swp
+.idea/
+.vscode/

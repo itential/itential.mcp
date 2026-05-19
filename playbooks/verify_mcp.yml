@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Pre-installation checks. Run this before deploying the MCP server to verify
+# that the target host meets requirements and that the platform is reachable.
+- name: Verify Itential MCP server prerequisites
+  hosts: mcp
+  become: true
+  tasks:
+    - name: Include MCP verify tasks
+      ansible.builtin.include_role:
+        name: itential.mcp.mcp
+        tasks_from: verify-mcp.yml

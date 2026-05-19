@@ -1,0 +1,105 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Package version to install. Use 'latest' to always install the newest release
+# from PyPI, or pin to a specific version (e.g., '0.12.1').
+mcp_version: latest
+
+# Python executable used to create the virtual environment.
+# itential-mcp requires Python 3.10+. python3.11 is installed by this role
+# and is available in the RHEL 8/9 AppStream repository.
+mcp_python_executable: /usr/bin/python3.11
+
+# OS packages installed before creating the virtual environment.
+# python3.11 satisfies the 3.10+ requirement on both RHEL 8 and RHEL 9.
+mcp_python_packages:
+  - python3.11
+
+# Filesystem paths
+mcp_install_dir: /opt/itential-mcp
+mcp_venv_dir: /opt/itential-mcp/venv
+mcp_conf_dir: /etc/itential-mcp
+mcp_conf_file: /etc/itential-mcp/mcp.conf
+mcp_env_file: /etc/itential-mcp/itential-mcp.env
+mcp_log_dir: /var/log/itential-mcp
+
+# System user and group the service runs as
+mcp_owner: itential-mcp
+mcp_group: itential-mcp
+
+# --- Server configuration ---
+
+# Transport protocol for the MCP server.
+#  - sse:  Server-Sent Events over HTTP. Widely supported by MCP clients.
+#  - http: Streamable HTTP. Newer MCP transport variant.
+# stdio is not supported by this role. It requires the MCP client and server
+# to run on the same machine and is incompatible with systemd service management.
+mcp_transport: sse
+
+# IP address the server listens on. 0.0.0.0 listens on all interfaces.
+# Only applies when mcp_transport is 'sse' or 'http'.
+mcp_host: "0.0.0.0"
+
+# Port the server listens on. Only applies when mcp_transport is 'sse' or 'http'.
+mcp_port: 8000
+
+# Log verbosity: DEBUG, INFO, WARNING, ERROR, CRITICAL, or NONE.
+mcp_log_level: INFO
+
+# Response serialization format: json or toon.
+# toon reduces token usage by ~30-60% for AI clients that support it.
+mcp_response_format: json
+
+# Comma-separated list of tool tags to include. Empty string includes all tags.
+mcp_include_tags: ""
+
+# Comma-separated list of tool tags to exclude.
+mcp_exclude_tags: "experimental,beta"
+
+# Interval in seconds for keepalive requests to the platform. Set to 0 to disable.
+mcp_keepalive_interval: 300
+
+# --- Platform connection ---
+
+# Hostname or IP address of the Itential Platform server.
+mcp_platform_host: localhost
+
+# Itential Platform API port.
+#  - Default HTTP port:  3000  (mcp_platform_tls: false)
+#  - Default HTTPS port: 3443  (mcp_platform_tls: true)
+# Override if Platform was installed on a non-standard port.
+mcp_platform_port: 3000
+
+# Set to true when the Platform API is served over HTTPS.
+# Itential Platform defaults to HTTP (port 3000) unless TLS was configured
+# during installation via the deployer.
+mcp_platform_tls: false
+
+# Set to true to skip TLS certificate verification. Use only in dev/test environments.
+mcp_platform_disable_verify: false
+
+# Path to a CA certificate bundle on the MCP server for verifying the Platform's TLS cert.
+# Required when the Platform uses a certificate signed by a private/internal CA.
+# After running update-ca-trust on the MCP server, set this to the system bundle:
+#   mcp_platform_ca_bundle: /etc/pki/tls/certs/ca-bundle.crt
+# Leave empty to use Python's built-in certifi bundle (trusts public CAs only).
+mcp_platform_ca_bundle: ""
+
+# Platform credentials. These are written to the environment file (mode 0600)
+# and are never stored in the main config file.
+#
+# Basic auth (default):
+mcp_platform_user: admin
+mcp_platform_password: admin
+#
+# OAuth — set both to use a Platform service account instead of basic auth.
+# When client_id and client_secret are set, user/password are ignored by the server.
+mcp_platform_client_id: ""
+mcp_platform_client_secret: ""
+
+# Request timeout in seconds when calling the platform API.
+mcp_platform_timeout: 30
+
+# --- Certify settings ---
+mcp_certify_report_dir_remote: /tmp/itential-mcp-certify
+mcp_certify_report_dir_local: "{{ playbook_dir }}/certify-reports"

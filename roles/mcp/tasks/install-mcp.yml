@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Create installation directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ mcp_install_dir }}"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install itential-mcp into virtual environment
+  ansible.builtin.pip:
+    name:
+      - "{{ 'itential-mcp' if mcp_version == 'latest' else 'itential-mcp==' + mcp_version }}"
+      - "fastmcp>=3.0,<3.3"
+    virtualenv: "{{ mcp_venv_dir }}"
+    virtualenv_command: "{{ mcp_python_executable }} -m venv"
+    state: "{{ 'latest' if mcp_version == 'latest' else 'present' }}"

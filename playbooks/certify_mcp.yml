@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Post-installation validation. Run this after deploying the MCP server to
+# confirm the service is healthy and the platform connection works.
+# A markdown report is written to {{ mcp_certify_report_dir_local }} on the control node.
+- name: Certify Itential MCP server installation
+  hosts: mcp
+  become: true
+  tasks:
+    - name: Include MCP certify tasks
+      ansible.builtin.include_role:
+        name: itential.mcp.mcp
+        tasks_from: certify-mcp.yml

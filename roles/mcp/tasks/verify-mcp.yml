@@ -1,0 +1,54 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Pre-installation checks. Run this before deploying to catch problems early.
+
+# python3.11 is installed by the role via dnf — no pre-flight check needed.
+# Display the system Python version for informational purposes only.
+- name: Get system Python version
+  ansible.builtin.command:
+    cmd: python3 --version
+  register: mcp_verify_python_version
+  changed_when: false
+  failed_when: false
+
+- name: Display system Python version
+  ansible.builtin.debug:
+    msg: "System Python: {{ mcp_verify_python_version.stdout }} — python3.11 will be installed by the role"
+
+- name: Verify Itential Platform host is reachable
+  block:
+    - name: Set effective platform port for connectivity check
+      ansible.builtin.set_fact:
+        mcp_verify_platform_port: >-
+          {{ mcp_platform_port if mcp_platform_port | int != 0
+             else (3443 if mcp_platform_tls | bool else 3000) }}
+
+    - name: Check connectivity to Itential Platform
+      ansible.builtin.wait_for:
+        host: "{{ mcp_platform_host }}"
+        port: "{{ mcp_verify_platform_port | int }}"
+        timeout: 10
+        state: started
+      register: platform_connectivity_check
+
+    - name: Display platform connectivity result
+      ansible.builtin.debug:
+        msg: "Platform {{ mcp_platform_host }}:{{ mcp_verify_platform_port }} is reachable"
+
+- name: Verify MCP listen port is available
+  when: mcp_transport in ['sse', 'http']
+  block:
+    - name: Check if MCP port is already in use
+      ansible.builtin.shell:
+        cmd: "ss -tlnp | grep -q ':{{ mcp_port }} '"
+      register: mcp_port_in_use
+      changed_when: false
+      failed_when: false
+
+    - name: Assert MCP listen port is not already in use
+      ansible.builtin.assert:
+        that: mcp_port_in_use.rc != 0
+        fail_msg: >
+          Port {{ mcp_port }} is already in use on {{ inventory_hostname }}.
+          Set mcp_port to an available port or stop the conflicting process.

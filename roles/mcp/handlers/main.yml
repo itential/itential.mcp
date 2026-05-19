@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Restart itential-mcp service
+  ansible.builtin.systemd:
+    name: itential-mcp
+    enabled: true
+    state: restarted
+    daemon_reload: true
+  listen: restart itential-mcp
+  throttle: 1

@@ -1,0 +1,22 @@
+# Copyright (c) 2026 Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Set to true to install itential-mcp from a pre-staged bundle of wheel files
+# instead of downloading from PyPI. Required for air-gapped environments.
+#
+# Before running with offline_install_enabled: true:
+#   1. Set mcp_version to a specific version (e.g., '0.12.1') — 'latest' is not supported.
+#   2. Download the wheel bundle from a Linux host matching the target OS and Python version.
+#      Running pip download on macOS will produce an incomplete bundle (missing Linux-specific
+#      conditional dependencies). Use a Linux host or a matching Docker container:
+#        pip download itential-mcp==0.12.1 "fastmcp>=3.0,<3.3" \
+#          -d ./files/itential-mcp-packages/
+#   3. Place the resulting directory at:
+#        {{ offline_control_node_root }}/itential-mcp-packages/
+offline_install_enabled: false
+
+# Root directory on the target VM where offline packages are staged.
+offline_target_node_root: /var/tmp
+
+# Root directory on the Ansible control node where offline packages are sourced from.
+offline_control_node_root: "{{ playbook_dir }}/files"

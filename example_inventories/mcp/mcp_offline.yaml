@@ -1,0 +1,46 @@
+---
+# In this example, the Deployer will install and configure the Itential MCP server
+# on a single VM with no internet access (air-gapped environment).
+# The package bundle must be staged on the Ansible control node before running.
+#
+# Before deploying, download the package bundle on a machine with internet access:
+#   pip download itential-mcp==<version> -d <playbook_dir>/files/itential-mcp-packages/
+#
+# NOTE: mcp_version must be a specific version. 'latest' is not supported for
+#       offline installs because the package bundle must be pre-staged.
+all:
+  children:
+    mcp:
+      hosts:
+        mcp01.example.com:
+      vars:
+        # The package version to install.
+        # This must match the version downloaded into the offline package bundle.
+        mcp_version: <version>
+
+        # The transport is set to SSE so AI clients can connect over the network.
+        #  - valid values: sse, http
+        mcp_transport: sse
+
+        # The Itential Platform host must be defined.
+        mcp_platform_host: <itential-platform-hostname>
+
+        # The platform credentials.
+        # NOTE: Using Ansible Vault for these values is highly recommended.
+        mcp_platform_user: <itential-platform-username>
+        mcp_platform_password: <itential-platform-password>
+
+        # Platform connection defaults match a standard deployer installation (HTTP, port 3000).
+        # Override for HTTPS: mcp_platform_port: 3443 and mcp_platform_tls: true
+        # mcp_platform_port: 3000
+        # mcp_platform_tls: true
+        # mcp_platform_disable_verify: false
+
+        # Offline install settings.
+        offline_install_enabled: true
+
+        # Directory on the target VM where the package bundle will be staged.
+        # offline_target_node_root: /var/tmp
+
+        # Directory on the Ansible control node where the package bundle is sourced from.
+        # offline_control_node_root: "{{ playbook_dir }}/files"

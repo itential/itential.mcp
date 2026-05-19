@@ -1,0 +1,150 @@
+# Itential MCP Server Certification Report
+
+**Host:** {{ inventory_hostname }}
+**Generated:** {{ ansible_date_time.iso8601 }}
+
+---
+
+## System Information
+
+| Property | Value |
+|----------|-------|
+| OS | {{ ansible_distribution }} {{ ansible_distribution_version }} |
+| Architecture | {{ ansible_architecture }} |
+| Hostname | {{ ansible_hostname }} |
+| IP Address | {{ ansible_default_ipv4.address | default('unknown') }} |
+
+---
+
+## Installation
+
+| Property | Value |
+|----------|-------|
+| Install Directory | {{ mcp_install_dir }} |
+| Venv Directory | {{ mcp_venv_dir }} |
+| Binary | {{ mcp_venv_dir }}/bin/itential-mcp |
+| Binary Exists | {{ 'Yes' if mcp_certify_binary_stat.stat.exists else 'No' }} |
+| Installed Version | {{ mcp_certify_version.stdout | default('unknown') | trim }} |
+
+---
+
+## Service Status
+
+| Property | Value |
+|----------|-------|
+| Active State | {{ mcp_certify_service.status.ActiveState }} |
+| Load State | {{ mcp_certify_service.status.LoadState }} |
+| Unit File State | {{ mcp_certify_service.status.UnitFileState }} |
+| Systemd Unit | {{ 'Present' if mcp_certify_unit_stat.stat.exists else 'Missing' }} |
+| Process Running | {{ 'Yes' if mcp_certify_process.rc == 0 else 'No' }} |
+
+---
+
+## Configuration
+
+| Property | Value |
+|----------|-------|
+| Config File | {{ mcp_conf_file }} |
+| Config Exists | {{ 'Yes' if mcp_certify_conf_stat.stat.exists else 'No' }} |
+| Config Permissions | {{ mcp_certify_conf_stat.stat.mode | default('unknown') }} |
+| Env File | {{ mcp_env_file }} |
+| Env File Exists | {{ 'Yes' if mcp_certify_env_stat.stat.exists else 'No' }} |
+| Env File Permissions | {{ mcp_certify_env_stat.stat.mode | default('unknown') }} |
+
+### Server Settings
+
+| Setting | Value |
+|---------|-------|
+| Transport | {{ mcp_transport }} |
+{% if mcp_transport in ['sse', 'http'] %}
+| Host | {{ mcp_host }} |
+| Port | {{ mcp_port }} |
+{% endif %}
+| Log Level | {{ mcp_log_level }} |
+| Response Format | {{ mcp_response_format }} |
+| Keepalive Interval | {{ mcp_keepalive_interval }}s |
+| Exclude Tags | {{ mcp_exclude_tags | default('(none)') }} |
+
+### Platform Settings
+
+| Setting | Value |
+|---------|-------|
+| Host | {{ mcp_platform_host }} |
+| Port | {{ mcp_platform_port if mcp_platform_port | int != 0 else 'default' }} |
+| TLS Enabled | {{ mcp_platform_tls }} |
+| Verify Disabled | {{ mcp_platform_disable_verify }} |
+| Timeout | {{ mcp_platform_timeout }}s |
+
+---
+
+## Connectivity
+{% if mcp_transport in ['sse', 'http'] %}
+
+| Endpoint | HTTP Status | Result |
+|----------|-------------|--------|
+| /status/healthz | {{ mcp_certify_health.status | default('no response') }} | {{ 'PASS' if mcp_certify_health.status | default(0) == 200 else 'FAIL' }} |
+| /status/readyz | {{ mcp_certify_readyz.status | default('no response') }} | {{ 'PASS' if mcp_certify_readyz.status | default(0) == 200 else 'FAIL' }} |
+
+**Note:** `/status/readyz` validates live connectivity from the MCP server to the Itential Platform.
+A failure here means the MCP server cannot reach or authenticate with the platform.
+
+### Port
+
+```
+{{ mcp_certify_port.stdout | default('(not listening)') }}
+```
+{% else %}
+Transport is `stdio` — health and readiness endpoints are not available.
+{% endif %}
+
+---
+
+## Tools
+
+{% if mcp_certify_tools.rc == 0 %}
+Available tools: **{{ mcp_certify_tools.stdout_lines | length }}**
+
+<details>
+<summary>Tool list</summary>
+
+```
+{{ mcp_certify_tools.stdout }}
+```
+
+</details>
+{% else %}
+Tool list unavailable (itential-mcp tools command returned non-zero exit code).
+{% endif %}
+
+---
+
+## Certification Result
+
+{% set service_ok = mcp_certify_service.status.ActiveState == 'active' %}
+{% set process_ok = mcp_certify_process.rc == 0 %}
+{% set binary_ok = mcp_certify_binary_stat.stat.exists %}
+{% set config_ok = mcp_certify_conf_stat.stat.exists %}
+{% set env_ok = mcp_certify_env_stat.stat.exists %}
+{% if mcp_transport in ['sse', 'http'] %}
+{% set health_ok = mcp_certify_health.status | default(0) == 200 %}
+{% set readyz_ok = mcp_certify_readyz.status | default(0) == 200 %}
+{% set overall = service_ok and process_ok and binary_ok and config_ok and env_ok and health_ok and readyz_ok %}
+{% else %}
+{% set health_ok = true %}
+{% set readyz_ok = true %}
+{% set overall = service_ok and process_ok and binary_ok and config_ok and env_ok %}
+{% endif %}
+
+| Check | Result |
+|-------|--------|
+| Service Active | {{ 'PASS' if service_ok else 'FAIL' }} |
+| Process Running | {{ 'PASS' if process_ok else 'FAIL' }} |
+| Binary Exists | {{ 'PASS' if binary_ok else 'FAIL' }} |
+| Config File Present | {{ 'PASS' if config_ok else 'FAIL' }} |
+| Env File Present | {{ 'PASS' if env_ok else 'FAIL' }} |
+{% if mcp_transport in ['sse', 'http'] %}
+| Health Endpoint | {{ 'PASS' if health_ok else 'FAIL' }} |
+| Readiness Endpoint | {{ 'PASS' if readyz_ok else 'FAIL' }} |
+{% endif %}
+
+**Overall: {{ 'CERTIFIED' if overall else 'NOT CERTIFIED' }}**
