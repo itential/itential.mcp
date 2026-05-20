@@ -17,10 +17,10 @@ mcp_python_packages:
 
 # Filesystem paths
 mcp_install_dir: /opt/itential-mcp
-mcp_venv_dir: /opt/itential-mcp/venv
+mcp_venv_dir: "{{ mcp_install_dir }}/venv"
 mcp_conf_dir: /etc/itential-mcp
-mcp_conf_file: /etc/itential-mcp/mcp.conf
-mcp_env_file: /etc/itential-mcp/itential-mcp.env
+mcp_conf_file: "{{ mcp_conf_dir }}/mcp.conf"
+mcp_env_file: "{{ mcp_conf_dir }}/itential-mcp.env"
 mcp_log_dir: /var/log/itential-mcp
 
 # System user and group the service runs as
@@ -68,12 +68,12 @@ mcp_platform_host: localhost
 #  - Default HTTP port:  3000  (mcp_platform_tls: false)
 #  - Default HTTPS port: 3443  (mcp_platform_tls: true)
 # Override if Platform was installed on a non-standard port.
-mcp_platform_port: 3000
+mcp_platform_port: 3443
 
 # Set to true when the Platform API is served over HTTPS.
-# Itential Platform defaults to HTTP (port 3000) unless TLS was configured
+# Itential Platform defaults to HTTPS (port 3443) when TLS is configured
 # during installation via the deployer.
-mcp_platform_tls: false
+mcp_platform_tls: true
 
 # Set to true to skip TLS certificate verification. Use only in dev/test environments.
 mcp_platform_disable_verify: false
