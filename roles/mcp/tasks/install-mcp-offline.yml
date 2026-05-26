@@ -11,6 +11,7 @@
   ansible.builtin.copy:
     src: "{{ offline_control_node_root }}/itential-mcp-packages/"
     dest: "{{ offline_target_node_root }}/itential-mcp-packages/"
+    mode: "0644"
 
 - name: Create installation directory
   ansible.builtin.file:
