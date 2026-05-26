@@ -1,6 +1,7 @@
 # Ansible
 *.retry
 inventories/
+inventory/
 
 # Offline package bundle — large wheel files, generated per-platform
 files/itential-mcp-packages/

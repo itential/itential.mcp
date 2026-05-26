@@ -41,7 +41,8 @@
   block:
     - name: Check if MCP port is already in use
       ansible.builtin.shell:
-        cmd: "ss -tlnp | grep -q ':{{ mcp_port }} '"
+        cmd: "set -o pipefail && ss -tlnp | grep -q ':{{ mcp_port }} '"
+        executable: /bin/bash
       register: mcp_port_in_use
       changed_when: false
       failed_when: false

@@ -30,9 +30,9 @@ all:
         mcp_platform_user: <itential-platform-username>
         mcp_platform_password: <itential-platform-password>
 
-        # Platform connection defaults match a standard deployer installation (HTTP, port 3000).
-        # Override for HTTPS: mcp_platform_port: 3443 and mcp_platform_tls: true
-        # mcp_platform_port: 3000
+        # Platform connection defaults to HTTPS (port 3443).
+        # Override for HTTP: mcp_platform_port: 3000 and mcp_platform_tls: false
+        # mcp_platform_port: 3443
         # mcp_platform_tls: true
         # mcp_platform_disable_verify: false
 
