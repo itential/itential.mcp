@@ -29,7 +29,8 @@
 
 - name: Check itential-mcp is listening on configured port
   ansible.builtin.shell:
-    cmd: "ss -tlnp | grep ':{{ mcp_port }}'"
+    cmd: "set -o pipefail && ss -tlnp | grep ':{{ mcp_port }}'"
+    executable: /bin/bash
   register: mcp_certify_port
   changed_when: false
   failed_when: false
