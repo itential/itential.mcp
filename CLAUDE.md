@@ -52,6 +52,7 @@ itential.mcp/
 │   └── certify_mcp.yml                 Post-install validation + report
 ├── roles/mcp/
 │   ├── defaults/main/
+
 │   │   ├── main.yml                    All role variables and defaults
 │   │   └── offline.yml                 Offline install variables
 │   ├── tasks/
