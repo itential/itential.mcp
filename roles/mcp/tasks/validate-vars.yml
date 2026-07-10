@@ -7,7 +7,9 @@
     - name: Validate transport value
       ansible.builtin.assert:
         that: mcp_transport in ['sse', 'http']
-        fail_msg: "mcp_transport must be one of: sse, http (stdio is not supported for systemd service deployments)"
+        fail_msg: >
+          mcp_transport must be one of: sse, http
+          (stdio is not supported for systemd service deployments)
 
     - name: Validate platform host is defined
       ansible.builtin.assert:

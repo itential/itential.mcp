@@ -123,6 +123,32 @@ when config files change.
 The `flush_handlers` meta task before the final assertion ensures the handler fires
 (and the service restarts) before we check `ActiveState`.
 
+### Deferring to itential-mcp's Own Defaults
+
+For settings where itential-mcp already ships a sensible built-in default and this
+collection has no reason to override it (`mcp_response_format`, `mcp_exclude_tags`,
+`mcp_keepalive_interval`, `mcp_platform_timeout`, `mcp_platform_disable_verify`),
+the role does not duplicate that default value. Duplicating it would mean this
+collection silently drifts out of sync if itential-mcp ever changes its own
+default.
+
+- For string/int settings, the role default is `""`, and `mcp.conf.j2` wraps the
+  line in `{% if var != "" %}` so the key is omitted from `mcp.conf` entirely when
+  left at the role default. itential-mcp then applies its own built-in default.
+- For `mcp_platform_disable_verify` (a boolean), there's no clean empty-string
+  sentinel — `""` would coerce falsy under Jinja's `| bool` filter, silently
+  behaving like `false` rather than "unset". Instead, this variable has **no
+  default at all** in `defaults/main/main.yml`, and `mcp.conf.j2` guards it with
+  `{% if mcp_platform_disable_verify is defined %}`. If a user doesn't set it in
+  inventory, the key never appears in `mcp.conf` and itential-mcp's own default
+  (`false`) applies.
+
+This does NOT apply to settings the role deliberately overrides (`mcp_transport`,
+`mcp_host`, `mcp_log_level`, `mcp_platform_port`/`mcp_platform_tls`) or settings
+Ansible itself needs a concrete value for to perform its own checks (`mcp_port`,
+used directly by `verify-mcp.yml` and `certify-mcp.yml` for port-in-use and health
+checks) — those keep explicit hardcoded defaults.
+
 ---
 
 ## Known Issues
@@ -217,11 +243,11 @@ Key variables and their non-obvious behaviors:
 |----------|---------|------|
 | `mcp_version` | `latest` | `latest` uses `pip state: latest`; pinned version uses `state: present` |
 | `mcp_transport` | `sse` | `stdio` is rejected by validation |
-| `mcp_platform_port` | `3000` | Itential Platform HTTP default. Use `3443` for HTTPS. |
-| `mcp_platform_tls` | `false` | Maps to `disable_tls = True/False` in mcp.conf (inverted) |
+| `mcp_platform_port` | `3443` | Itential Platform HTTPS default. Use `3000` for HTTP. |
+| `mcp_platform_tls` | `true` | Maps to `disable_tls = True/False` in mcp.conf (inverted) |
 | `mcp_platform_ca_bundle` | `""` | When set, writes `SSL_CERT_FILE` to env file |
 | `mcp_platform_client_id` | `""` | When set, OAuth creds replace user/password in env file |
-| `mcp_keepalive_interval` | `300` | Set to `0` to disable keepalive entirely |
+| `mcp_keepalive_interval` | `""` (itential-mcp default: `300`) | Omitted from mcp.conf when empty so itential-mcp's own default applies; set to `0` to disable keepalive entirely |
 | `offline_install_enabled` | `false` | Requires `mcp_version` to be pinned (not `latest`) |
 
 ### mcp_platform_tls Inversion

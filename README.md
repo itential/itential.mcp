@@ -230,10 +230,10 @@ All variables have defaults and can be overridden in your inventory.
 | `mcp_host` | `0.0.0.0` | IP address the server listens on. |
 | `mcp_port` | `8000` | Port the server listens on. |
 | `mcp_log_level` | `INFO` | Log verbosity. Valid values: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`, `NONE`. |
-| `mcp_response_format` | `json` | Response serialization format. Valid values: `json`, `toon`. |
+| `mcp_response_format` | `""` (itential-mcp default: `json`) | Response serialization format. Valid values: `json`, `toon`. Left empty to defer to the application's own default. |
 | `mcp_include_tags` | `""` | Comma-separated list of tool tags to include. Empty includes all tools. |
-| `mcp_exclude_tags` | `experimental,beta` | Comma-separated list of tool tags to exclude. |
-| `mcp_keepalive_interval` | `300` | Seconds between keepalive requests to the Platform. Set to `0` to disable. |
+| `mcp_exclude_tags` | `""` (itential-mcp default: `experimental,beta`) | Comma-separated list of tool tags to exclude. Left empty to defer to the application's own default. |
+| `mcp_keepalive_interval` | `""` (itential-mcp default: `300`) | Seconds between keepalive requests to the Platform. Set to `0` to disable. Left empty to defer to the application's own default. |
 | `mcp_conf_dir` | `/etc/itential-mcp` | Directory for configuration files. |
 | `mcp_log_dir` | `/var/log/itential-mcp` | Directory for log files. |
 | `mcp_owner` | `itential-mcp` | System user the service runs as. |
@@ -244,12 +244,12 @@ All variables have defaults and can be overridden in your inventory.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `mcp_platform_host` | `localhost` | Hostname or IP of the Itential Platform server. |
-| `mcp_platform_port` | `3000` | Platform API port. Default `3000` (HTTP). Use `3443` for HTTPS. |
+| `mcp_platform_port` | `3443` | Platform API port. Default `3443` (HTTPS). Use `3000` for HTTP. |
 | `mcp_platform_user` | `admin` | Username for basic authentication. Ignored when OAuth credentials are set. |
 | `mcp_platform_password` | `admin` | Password for basic authentication. |
 | `mcp_platform_client_id` | `""` | OAuth client ID. When set, OAuth is used instead of basic auth. |
 | `mcp_platform_client_secret` | `""` | OAuth client secret. |
-| `mcp_platform_timeout` | `30` | Request timeout in seconds. |
+| `mcp_platform_timeout` | `""` (itential-mcp default: `30`) | Request timeout in seconds. Left empty to defer to the application's own default. |
 
 **&#9432; Note:** All credentials are written to `/etc/itential-mcp/itential-mcp.env`
 with mode `0600`. They are never written to `mcp.conf`. Using Ansible Vault for
@@ -259,8 +259,8 @@ credential values is strongly recommended.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `mcp_platform_tls` | `false` | Set to `true` when the Platform API is served over HTTPS. |
-| `mcp_platform_disable_verify` | `false` | Set to `true` to skip TLS certificate verification. Use only in development environments. |
+| `mcp_platform_tls` | `true` | Set to `false` when the Platform API is served over plain HTTP. |
+| `mcp_platform_disable_verify` | unset (itential-mcp default: `false`) | Set to `true` to skip TLS certificate verification. Use only in development environments. Left unset in this collection's defaults to defer to the application's own default. |
 | `mcp_platform_ca_bundle` | `""` | Path to a CA certificate bundle on the MCP server. Required when the Platform uses a certificate signed by a private CA. See [TLS Configuration](#tls-configuration). |
 
 ### Offline Variables

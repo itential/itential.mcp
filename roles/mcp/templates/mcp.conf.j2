@@ -8,8 +8,12 @@ host = {{ mcp_host }}
 port = {{ mcp_port }}
 {% endif %}
 log_level = {{ mcp_log_level }}
+{% if mcp_response_format %}
 response_format = {{ mcp_response_format }}
+{% endif %}
+{% if mcp_keepalive_interval != "" %}
 keepalive_interval = {{ mcp_keepalive_interval }}
+{% endif %}
 {% if mcp_include_tags %}
 include_tags = {{ mcp_include_tags }}
 {% endif %}
@@ -23,5 +27,9 @@ host = {{ mcp_platform_host }}
 port = {{ mcp_platform_port }}
 {% endif %}
 disable_tls = {{ (not mcp_platform_tls | bool) | lower }}
+{% if mcp_platform_disable_verify is defined %}
 disable_verify = {{ mcp_platform_disable_verify | lower }}
+{% endif %}
+{% if mcp_platform_timeout != "" %}
 timeout = {{ mcp_platform_timeout }}
+{% endif %}

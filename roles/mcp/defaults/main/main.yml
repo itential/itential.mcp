@@ -48,16 +48,22 @@ mcp_log_level: INFO
 
 # Response serialization format: json or toon.
 # toon reduces token usage by ~30-60% for AI clients that support it.
-mcp_response_format: json
+# Left empty to defer to itential-mcp's own default (json) rather than
+# duplicating it here — set explicitly only to override.
+mcp_response_format: ""
 
 # Comma-separated list of tool tags to include. Empty string includes all tags.
 mcp_include_tags: ""
 
 # Comma-separated list of tool tags to exclude.
-mcp_exclude_tags: "experimental,beta"
+# Left empty to defer to itential-mcp's own default (experimental,beta) rather
+# than duplicating it here — set explicitly only to override.
+mcp_exclude_tags: ""
 
 # Interval in seconds for keepalive requests to the platform. Set to 0 to disable.
-mcp_keepalive_interval: 300
+# Left empty to defer to itential-mcp's own default (300) rather than
+# duplicating it here — set explicitly only to override.
+mcp_keepalive_interval: ""
 
 # --- Platform connection ---
 
@@ -76,7 +82,9 @@ mcp_platform_port: 3443
 mcp_platform_tls: true
 
 # Set to true to skip TLS certificate verification. Use only in dev/test environments.
-mcp_platform_disable_verify: false
+# No default is set here — leaving this variable undefined lets itential-mcp
+# apply its own default (false, i.e. verification enabled) rather than
+# duplicating that default in this collection. Set explicitly to override.
 
 # Path to a CA certificate bundle on the MCP server for verifying the Platform's TLS cert.
 # Required when the Platform uses a certificate signed by a private/internal CA.
@@ -98,7 +106,9 @@ mcp_platform_client_id: ""
 mcp_platform_client_secret: ""
 
 # Request timeout in seconds when calling the platform API.
-mcp_platform_timeout: 30
+# Left empty to defer to itential-mcp's own default (30) rather than
+# duplicating it here — set explicitly only to override.
+mcp_platform_timeout: ""
 
 # --- Certify settings ---
 mcp_certify_report_dir_remote: /tmp/itential-mcp-certify

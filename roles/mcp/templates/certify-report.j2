@@ -61,9 +61,9 @@
 | Port | {{ mcp_port }} |
 {% endif %}
 | Log Level | {{ mcp_log_level }} |
-| Response Format | {{ mcp_response_format }} |
-| Keepalive Interval | {{ mcp_keepalive_interval }}s |
-| Exclude Tags | {{ mcp_exclude_tags | default('(none)') }} |
+| Response Format | {{ mcp_response_format if mcp_response_format else 'set to application default' }} |
+| Keepalive Interval | {{ (mcp_keepalive_interval ~ 's') if mcp_keepalive_interval != "" else 'set to application default' }} |
+| Exclude Tags | {{ mcp_exclude_tags if mcp_exclude_tags else 'set to application default' }} |
 
 ### Platform Settings
 
@@ -72,8 +72,8 @@
 | Host | {{ mcp_platform_host }} |
 | Port | {{ mcp_platform_port if mcp_platform_port | int != 0 else 'default' }} |
 | TLS Enabled | {{ mcp_platform_tls }} |
-| Verify Disabled | {{ mcp_platform_disable_verify }} |
-| Timeout | {{ mcp_platform_timeout }}s |
+| Verify Disabled | {{ mcp_platform_disable_verify if mcp_platform_disable_verify is defined else 'set to application default (false)' }} |
+| Timeout | {{ (mcp_platform_timeout ~ 's') if mcp_platform_timeout != "" else 'set to application default' }} |
 
 ---
 
