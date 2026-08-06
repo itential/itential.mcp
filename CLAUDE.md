@@ -293,6 +293,16 @@ Key findings relevant to future work:
 
 ---
 
+## CI
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ansible-lint.yml` | push/PR to `main`, `dev` | Lint validation |
+| `role-readme-check.yml` | push/PR to `dev` | Fails the build if any `roles/*/` directory is missing a README (Ansible Galaxy requirement) |
+| `publish_ansible_collection.yml` | GitHub release or manual | Publish to Galaxy |
+
+---
+
 ## Entry Points
 
 When working on this collection:
