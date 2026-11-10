@@ -5,15 +5,21 @@
 # from PyPI, or pin to a specific version (e.g., '0.12.1').
 mcp_version: latest
 
+# EL10 and later ship Python 3.12+ as the system python3 and do not provide
+# python3.11, so the system python3 is used there. EL8/EL9 and Amazon Linux 2023
+# (which reports a major version of 2023) use python3.11.
+mcp_use_system_python: >-
+  {{ ansible_distribution != 'Amazon'
+  and ansible_distribution_major_version is version('10', '>=') }}
+
 # Python executable used to create the virtual environment.
-# itential-mcp requires Python 3.10+. python3.11 is installed by this role
-# and is available in the RHEL 8/9 AppStream repository.
-mcp_python_executable: /usr/bin/python3.11
+# itential-mcp requires Python 3.10+.
+mcp_python_executable: >-
+  {{ '/usr/bin/python3' if mcp_use_system_python | bool
+  else '/usr/bin/python3.11' }}
 
 # OS packages installed before creating the virtual environment.
-# python3.11 satisfies the 3.10+ requirement on both RHEL 8 and RHEL 9.
-mcp_python_packages:
-  - python3.11
+mcp_python_packages: "{{ ['python3'] if mcp_use_system_python | bool else ['python3.11'] }}"
 
 # Filesystem paths
 mcp_install_dir: /opt/itential-mcp

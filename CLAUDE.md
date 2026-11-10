@@ -27,7 +27,7 @@ Network devices
 **What the role does, in order:**
 
 1. Validate all inventory variables (assertions, fail fast)
-2. Install `python3.11` via `dnf`
+2. Install Python via `dnf` (`python3.11`; the system `python3` on EL10 and later)
 3. Create `/opt/itential-mcp/venv` and `pip install itential-mcp`
 4. Create `itential-mcp` system user/group
 5. Write `/etc/itential-mcp/mcp.conf` (non-sensitive server and platform config)
@@ -57,7 +57,7 @@ itential.mcp/
 │   ├── tasks/
 │   │   ├── main.yml                    Entry point and flow control
 │   │   ├── validate-vars.yml           Assertions (transport, port, offline version)
-│   │   ├── install-python.yml          dnf install python3.11
+│   │   ├── install-python.yml          dnf install mcp_python_packages
 │   │   ├── install-mcp.yml             pip install (online)
 │   │   ├── install-mcp-offline.yml     Copy bundle + pip install (offline)
 │   │   ├── configure-mcp.yml           User, dirs, mcp.conf, env file, systemd unit
@@ -284,7 +284,8 @@ disable_tls = {{ (not mcp_platform_tls | bool) | lower }}
 A full test record is maintained in `testing.md` (not committed — personal notes).
 Key findings relevant to future work:
 
-- Tested on: Rocky Linux 9, Amazon Linux 2023
+- Tested on: Rocky Linux 9, Rocky Linux 10, Amazon Linux 2023 (EL10 uses the system
+  Python 3.12 because python3.11 is not available there; see `mcp_use_system_python`)
 - All transport modes (SSE, HTTP), all auth methods (basic auth, OAuth), TLS with
   public and private CAs have been validated
 - Offline install tested on Amazon Linux 2023; bundle generated on that same host
