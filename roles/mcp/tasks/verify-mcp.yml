@@ -3,8 +3,8 @@
 ---
 # Pre-installation checks. Run this before deploying to catch problems early.
 
-# python3.11 is installed by the role via dnf — no pre-flight check needed.
-# Display the system Python version for informational purposes only.
+# The Python packages in mcp_python_packages are installed by the role via dnf — no
+# pre-flight check needed. Display the system Python version for informational purposes only.
 - name: Get system Python version
   ansible.builtin.command:
     cmd: python3 --version
@@ -14,7 +14,7 @@
 
 - name: Display system Python version
   ansible.builtin.debug:
-    msg: "System Python: {{ mcp_verify_python_version.stdout }} — python3.11 will be installed by the role"
+    msg: "System Python: {{ mcp_verify_python_version.stdout }} — {{ mcp_python_packages | join(', ') }} will be installed by the role"
 
 - name: Verify Itential Platform host is reachable
   block:

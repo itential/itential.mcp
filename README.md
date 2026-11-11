@@ -42,7 +42,7 @@ Platform through a standardized interface.
 The `itential.mcp` collection installs and manages the Itential MCP Server as a
 `systemd` service on a Linux VM. It handles:
 
-- Installing Python 3.11 and creating a dedicated virtual environment
+- Installing Python (3.11, or the system Python 3.12+ on EL10 and later) and creating a dedicated virtual environment
 - Installing the `itential-mcp` package and its dependencies
 - Creating a dedicated system user and configuring file permissions
 - Writing the server configuration and credentials files
@@ -106,7 +106,7 @@ of it.
 
 | Component | Requirement |
 |-----------|-------------|
-| OS | RHEL 8/9, Rocky 8/9, Oracle Linux 8/9, Amazon Linux 2023 |
+| OS | RHEL 8/9/10, Rocky 8/9/10, Oracle Linux 8/9, Amazon Linux 2023 |
 | Architecture | x86_64, aarch64 |
 | RAM | 1 GB minimum |
 | Disk | 2 GB free in `/opt` |
@@ -150,7 +150,7 @@ ansible-galaxy collection install itential.mcp:==0.1.0
 ### Verify Prerequisites
 
 Run the verify playbook against your target server before installing. It checks
-that Python 3.11 is available, the Platform host is reachable, and the MCP port
+the system Python version, that the Platform host is reachable, and the MCP port
 is not already in use.
 
 ```bash
@@ -173,7 +173,7 @@ ansible-playbook itential.mcp.mcp -i your_inventory.yaml
 
 The playbook will:
 1. Validate all variables
-2. Install `python3.11` via `dnf`
+2. Install Python via `dnf` (`python3.11`, or the system `python3` on EL10 and later)
 3. Create a Python virtual environment at `/opt/itential-mcp/venv`
 4. Install `itential-mcp` and its dependencies
 5. Create the `itential-mcp` system user and group
@@ -217,8 +217,8 @@ All variables have defaults and can be overridden in your inventory.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `mcp_version` | `latest` | Package version. Use `latest` for the newest PyPI release or pin to a specific version (e.g., `0.12.1`). Must be a pinned version for offline installs. |
-| `mcp_python_executable` | `/usr/bin/python3.11` | Python executable used to create the virtual environment. |
-| `mcp_python_packages` | `[python3.11]` | OS packages installed before creating the virtual environment. Add `python3.11-pip` for Amazon Linux 2023. |
+| `mcp_python_executable` | `/usr/bin/python3.11` (`/usr/bin/python3` on EL10 and later) | Python executable used to create the virtual environment. |
+| `mcp_python_packages` | `[python3.11]` (`[python3]` on EL10 and later) | OS packages installed before creating the virtual environment. Add `python3.11-pip` for Amazon Linux 2023. |
 | `mcp_install_dir` | `/opt/itential-mcp` | Root installation directory. |
 | `mcp_venv_dir` | `/opt/itential-mcp/venv` | Python virtual environment path. |
 
